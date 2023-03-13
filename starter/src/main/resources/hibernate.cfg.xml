@@ -5,9 +5,9 @@
     <session-factory>
         <!-- JDBC Database connection settings -->
         <property name="connection.driver_class">org.postgresql.Driver</property>
-        <!-- <property name="connection.url">${env.dbcon}</property>
-        <property name="connection.username">${env.username}</property>
-        <property name="connection.password">${env.password}</property> -->
+        <!-- <property name="connection.url">$(env.dbcon)</property>
+        <property name="connection.username">$(env.username)</property>
+        <property name="connection.password">$(env.password)</property> -->
 
         <property name="connection.url">jdbc:postgresql://db.bit.io:5432/mingliudev/bestMovie</property>
         <property name="connection.username">mingliudev</property>

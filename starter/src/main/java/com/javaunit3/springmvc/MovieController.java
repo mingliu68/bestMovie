@@ -1,5 +1,9 @@
 package com.javaunit3.springmvc;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.hibernate.Session;
@@ -10,6 +14,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.javaunit3.springmvc.model.MovieEntity;
+import com.javaunit3.springmvc.model.VoteEntity;
 
 @Controller
 public class MovieController {
@@ -24,13 +29,50 @@ public class MovieController {
 
     @RequestMapping("/bestMovie")
     public String getBestMoviePage(Model model) {
-        model.addAttribute("BestMovie", bestMovieService.getBestMovie().getTitle());
+        // model.addAttribute("BestMovie", bestMovieService.getBestMovie().getTitle());
+
+        Session session = factory.getCurrentSession();
+
+        session.beginTransaction();
+
+        List<MovieEntity> movieEntityList = session.createQuery("from MovieEntity").list();
+        
+        // example snippet users.sort(Comparator.comparing(User::getCreatedOn));
+
+        movieEntityList.sort(Comparator.comparing(movieEntity -> movieEntity.getVotes().size()));
+        MovieEntity movieWithMostVotes = movieEntityList.get(movieEntityList.size() - 1);
+        List<String> voterNames = new ArrayList<>();
+
+        for(VoteEntity vote: movieWithMostVotes.getVotes()) {
+            voterNames.add(vote.getVoterName());
+        }
+        
+        String voterNameList = String.join(",", voterNames);
+
+        model.addAttribute("bestMovie", movieWithMostVotes.getTitle());
+        model.addAttribute("bestMovieVoters", voterNameList);
+
+        session.getTransaction().commit();
+
         return "bestMovie";
     }
 
 
     @RequestMapping("/voteForBestMovieForm")
-    public String voteForBestMovieFormPage() {
+    public String voteForBestMovieFormPage(Model model) {
+
+        Session session = factory.getCurrentSession();
+
+        session.beginTransaction();
+
+        List<MovieEntity> movieEntityList = session.createQuery("from MovieEntity").list();
+        
+        
+        model.addAttribute("movies", movieEntityList);
+        
+
+        session.getTransaction().commit();
+
 
         return "voteForTheBestMovie";
     }
@@ -38,8 +80,25 @@ public class MovieController {
     @RequestMapping("/voteForBestMovie")
     public String voteForBestMovie(HttpServletRequest request, Model model) {
 
-        String title = request.getParameter("movieTitle");
-        model.addAttribute("BestMovieVote", title);
+        // String title = request.getParameter("movieTitle");
+        // model.addAttribute("BestMovieVote", title);
+
+        String movieId = request.getParameter("movie_id");
+        String voterName = request.getParameter("name");
+
+        Session session = factory.getCurrentSession();
+
+        session.beginTransaction();
+
+        MovieEntity movieEntity = (MovieEntity) session.get(MovieEntity.class, Integer.parseInt(movieId));
+        VoteEntity newVote = new VoteEntity();
+
+        newVote.setVoterName(voterName);
+        movieEntity.addVote(newVote);   
+        
+        session.update(movieEntity);
+
+        session.getTransaction().commit();
 
         return "voteForTheBestMovie";
     }

@@ -1,18 +1,23 @@
 package com.javaunit3.springmvc.model;
 
+import java.util.List;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
+
 
 @Entity
 @Table (name="movies")
 public class MovieEntity {
 
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="movie_id")
@@ -26,6 +31,23 @@ public class MovieEntity {
 
     @Column(name="genre")
     private String genre;
+
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name="movie_id")
+    private List<VoteEntity> votes;
+
+    // get, set, and add vote
+    public List<VoteEntity> getVotes() {
+        return votes;
+    }
+
+    public void setVotes(List<VoteEntity> votes) {
+        this.votes = votes;
+    }
+
+    public void addVote(VoteEntity vote) {
+        votes.add(vote);
+    }
 
     public void setId(Integer id) {
         this.id = id;
